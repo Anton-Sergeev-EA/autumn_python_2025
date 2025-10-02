@@ -22,10 +22,8 @@ def get_year_name(year):
     # % 5 — берем остаток от деления на 5, так как цветов всего 5
     animal_index = offset % 12  # Животное меняется каждый год
     
-    # Формируем результат
     return f"{colors[color_index]} {animals[animal_index]}"
 
 
-# Пример использования
 year = int(input("Введите год: "))
 print(f"Год {year} — год {get_year_name(year)}")
