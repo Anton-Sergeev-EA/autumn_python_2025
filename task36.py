@@ -1,43 +1,40 @@
-# Инкапсуляция и property
-# todo: Класс "Температура". Создайте класс Temperature, который хранит
-#  температуру в градусах Цельсия. Добавьте свойство для получения и
-#  установки  температуры в Фаренгейтах и Кельвинах. Внутренне температура
-#  должна храниться только в Цельсиях.
+# todo: Класс "Пользователь" (Валидация email). Создайте класс User. У него
+#  должны быть свойства email и password. При установке email проверяйте,
+#  что строка содержит символ @ (простая валидация). При установке пароля,
+#  храните не сам пароль, а его хеш (для простоты можно использовать hash(
+#  )).  Сделайте метод check_password(password), который проверяет,
+#  соответствует ли хеш переданного пароля сохраненному хешу.
 
-# celsius (get, set) - работа с Цельсиями.
-# fahrenheit (get, set) - при установке конвертирует значение в Цельсии.
-# kelvin (get, set) - при установке конвертирует значение в Цельсии.
-
-class Temperature:
-    def __init__(self, celsius):
-        self._celsius = celsius
+class User:
+    def __init__(self, email, password):
+        self.email = email
+        self.password = password
 
     @property
-    def celsius(self):
-        return self._celsius
+    def email(self):
+        return self._email
 
-    @celsius.setter
-    def celsius(self, value):
-        self._celsius = value
-
-    @property
-    def fahrenheit(self):
-        return (self._celsius * 9/5) + 32
-
-    @fahrenheit.setter
-    def fahrenheit(self, value):
-        self._celsius = (value - 32) * 5/9
+    @email.setter
+    def email(self, value):
+        if '@' not in value:
+            raise ValueError("Неверный формат email: отсутствует символ @")
+        self._email = value
 
     @property
-    def kelvin(self):
-        return self._celsius + 273.15
+    def password(self):
+        raise AttributeError("Пароль нельзя получить напрямую")
 
-    @kelvin.setter
-    def kelvin(self, value):
-        self._celsius = value - 273.15
+    @password.setter
+    def password(self, value):
+        self._password_hash = hash(value)
+
+    def check_password(self, password):
+        return hash(password) == self._password_hash
+
 
 # Пример использования
-t = Temperature(25)
-print(f"{t.celsius}C, {t.fahrenheit}F, {t.kelvin}K")
-t.fahrenheit = 32
-print(f"После установки 32F: {t.celsius}C")
+user = User("test@example.com", "secret")
+print(user.email)  # test@example.com
+# print(user.password) # AttributeError
+print(user.check_password("secret"))  # True
+print(user.check_password("wrong"))   # False
