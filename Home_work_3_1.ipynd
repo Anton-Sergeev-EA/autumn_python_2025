@@ -1,0 +1,97 @@
+!pip install docling[all]
+
+from docling.datamodel.pipeline_options import PdfPipelineOptions
+from docling.document_converter import DocumentConverter
+from docling.datamodel.base_models import InputFormat
+import io
+from pathlib import Path
+
+def parse_pdf_with_docling(file_path):
+    """
+    Извлекает текст из PDF документа с помощью Docling.
+
+    :param file_path: Путь к PDF файлу или BytesIO объект
+    :return: Извлеченный текст документа
+    """
+    try:
+        pipeline_options = PdfPipelineOptions()
+
+        converter = DocumentConverter(
+            format=InputFormat.PDF,
+            pipeline_options=pipeline_options
+        )
+
+        if isinstance(file_path, (str, Path)):
+            result = converter.convert(file_path)
+        else:
+            result = converter.convert(file_path, format=InputFormat.PDF)
+
+        text_parts = []
+
+        if result.document.text and result.document.text.strip():
+            text_parts.append(result.document.text)
+
+        for table in result.document.tables:
+            if table.caption and table.caption.strip():
+                text_parts.append(f"Таблица: {table.caption}")
+            if table.text and table.text.strip():
+                text_parts.append(table.text)
+
+        for pic in result.document.pictures:
+            if pic.caption and pic.caption.strip():
+                text_parts.append(f"Изображение: {pic.caption}")
+
+        full_text = "\n\n".join(text_parts)
+
+        return full_text.strip()
+
+    except Exception as e:
+        print(f"Ошибка при обработке PDF с Docling: {e}")
+        return ""
+
+def parse_website_with_docling(url):
+    """
+    Извлекает текст из веб-страницы с помощью Docling.
+
+    :param url: URL веб-страницы
+    :return: Извлеченный текст веб-страницы
+    """
+    try:
+        converter = DocumentConverter(format=InputFormat.HTML)
+
+        result = converter.convert(url)
+
+        text_parts = []
+
+        if result.document.text and result.document.text.strip():
+            text_parts.append(result.document.text)
+
+        for table in result.document.tables:
+            if table.caption and table.caption.strip():
+                text_parts.append(f"Таблица: {table.caption}")
+            if table.text and table.text.strip():
+                text_parts.append(table.text)
+
+        for pic in result.document.pictures:
+            if pic.caption and pic.caption.strip():
+                text_parts.append(f"Изображение: {pic.caption}")
+
+        full_text = "\n\n".join(text_parts)
+
+        return full_text.strip()
+
+    except Exception as e:
+        print(f"Ошибка при обработке веб-страницы с Docling: {e}")
+        return f"[ОШИБКА ВЕБ-САЙТА: {e}]"
+
+# Пример использования для PDF:
+print("-> Обработка PDF с Docling")
+docling_pdf_text = parse_pdf_with_docling(pdf_path)
+print(f"Извлечено {len(docling_pdf_text)} символов.")
+print(f"Первые 1000 символов: {docling_pdf_text[:1000]}...")
+
+# Пример использования для веб-страницы:
+print("\n-> Обработка веб-сайта с Docling")
+WEBSITE_URL = "https://habr.com/ru/news/968856/"
+docling_web_text = parse_website_with_docling(WEBSITE_URL)
+print(f"Извлечено {len(docling_web_text)} символов.")
